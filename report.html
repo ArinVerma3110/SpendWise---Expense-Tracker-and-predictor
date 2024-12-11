@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendWise - Expense Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+        button {
+            display: block;
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #predictionGraphs h3 {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Expense Report</h1>
+
+    <h2>Combined Graph</h2>
+    <img src="data:image/png;base64,{{ combined_plot }}" alt="Combined Expense Trend">
+
+    <h2>Category-wise Graphs</h2>
+    {% for category, plot in category_plots.items() %}
+        <h3>{{ category }}</h3>
+        <img src="data:image/png;base64,{{ plot }}" alt="{{ category }} Expense Trend">
+    {% endfor %}
+
+    <button id="predictButton">Predict Future Expenses</button>
+    <div id="predictionGraphs"></div>
+
+    <script>
+        document.getElementById('predictButton').onclick = function () {
+            const graphDiv = document.getElementById('predictionGraphs');
+            graphDiv.innerHTML = '<p>Loading predictions...</p>';
+            fetch('/predict')
+                .then(response => response.json())
+                .then(data => {
+                    graphDiv.innerHTML = '';
+                    for (const [category, plot] of Object.entries(data)) {
+                        if (plot === "Not enough data to predict.") {
+                            graphDiv.innerHTML += `<h3>${category}</h3><p>${plot}</p>`;
+                        } else {
+                            graphDiv.innerHTML += `<h3>${category}</h3><img src="data:image/png;base64,${plot}" alt="${category} Prediction">`;
+                        }
+                    }
+                });
+        };
+    </script>
+
+    <a href="/">Back</a>
+</body>
+</html>
